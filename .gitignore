@@ -1,0 +1,16 @@
+/.dart_tool/
+/.pub/
+/build/
+/coverage/
+/doc/api/
+/pubspec.lock
+/tmp/
+/screenshots/
+
+**/.dart_tool/
+**/build/
+**/node_modules/
+pubspec_overrides.yaml
+
+.DS_Store
+*.log

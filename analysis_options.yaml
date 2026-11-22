@@ -1,0 +1,33 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  exclude:
+    - lib/src/server/overlay_bundle.g.dart
+    - test/fixtures/**
+
+plugins:
+  jaspr_lints:
+    version: ^0.8.0-beta.0
+    diagnostics:
+      unsafe_imports: true
+
+formatter:
+  page_width: 120
+  trailing_commas: preserve
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_dynamic_calls
+    - avoid_types_as_parameter_names
+    - cancel_subscriptions
+    - directives_ordering
+    - discarded_futures
+    - no_leading_underscores_for_local_identifiers
+    - prefer_final_locals
+    - sort_pub_dependencies
+    - unawaited_futures
