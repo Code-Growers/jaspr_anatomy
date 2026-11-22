@@ -1,6 +1,7 @@
 import 'package:jaspr/server.dart';
 
 import '../core/snapshot.dart';
+import '../protocol.dart';
 import 'type_registry.dart';
 
 /// Builds an [AnatomySnapshot] from the finished server-side element tree below [root].

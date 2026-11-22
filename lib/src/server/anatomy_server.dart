@@ -55,7 +55,9 @@ class Anatomy extends StatelessComponent {
         final mode = AnatomyMode.forRequest(
           url: binding.currentUrl,
           header: binding.request.headers.singleValues[anatomyHeader],
-          cookie: binding.cookies[anatomyCookie],
+          // Not binding.cookies: it throws on a malformed Cookie header, and
+          // the tool must never break a page.
+          cookie: readCookie(binding.request.headers.singleValues['cookie'], anatomyCookie),
           hotkey: hotkey,
         );
         if (mode != AnatomyMode.off) {

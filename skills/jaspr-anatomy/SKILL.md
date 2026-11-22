@@ -81,8 +81,10 @@ confirm with the user which findings to act on.
 
 ## Limits to keep in mind
 
-- The tree is the page as the server rendered it. Content a client component
-  draws later in the browser is missing.
+- `inspect` reads the page as the server rendered it. Content a client
+  component draws later in the browser is only in the overlay's
+  `window.__jasprAnatomy.snapshot()`, and only when the app also wraps its
+  client root (`runApp(Anatomy(child: ClientApp()))`).
 - Raw HTML is opaque.
 - Source locations need a server run from source (`jaspr serve`, `dart run`).
 - In a browser session with the overlay on, `window.__jasprAnatomy.snapshot()`

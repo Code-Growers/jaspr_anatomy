@@ -206,6 +206,18 @@ void main() {
       expect(body, isNot(contains(anatomyHotkeyId)));
     });
 
+    testServer('a malformed cookie header neither breaks the page nor hides the cookie', (tester) async {
+      final result = await renderComponent(
+        const Anatomy(enabled: true, child: FixturePage()),
+        request: Request('GET', Uri.parse('http://test.server/'), headers: {'cookie': '; $anatomyCookie=1; ;broken'}),
+      );
+      final body = utf8.decode(result.body);
+
+      expect(result.statusCode, 200);
+      expect(snapshotIn(body).roots, isNotEmpty);
+      expect(body, contains('id="$anatomyOverlayId"'));
+    });
+
     testServer('the data script tells the overlay the project root and the editor link', (tester) async {
       tester.pumpComponent(
         const Anatomy(enabled: true, editorUrl: 'idea://open?file={file}&line={line}', child: FixturePage()),

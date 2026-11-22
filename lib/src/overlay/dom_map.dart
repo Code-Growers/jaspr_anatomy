@@ -37,6 +37,15 @@ class DomMap {
     return map;
   }
 
+  /// A map whose elements are already known, keyed by [AnatomyNode.id].
+  factory DomMap.known(AnatomySnapshot snapshot, Map<int, web.Element> elements) {
+    final map = DomMap._()
+      ..expected = snapshot.elements.length
+      ..matched = elements.length;
+    map._elements.addAll(elements);
+    return map;
+  }
+
   final Map<int, web.Element> _elements = {};
 
   /// Element nodes the snapshot describes.

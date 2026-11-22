@@ -32,7 +32,16 @@ runApp(
 );
 ```
 
-That is the whole integration. It works the same with `renderComponent` and custom shelf servers. `Anatomy` must sit inside the body, not around `Document`.
+That is the whole integration for what the server renders. It works the same with `renderComponent` and custom shelf servers. `Anatomy` must sit inside the body, not around `Document`.
+
+To also see what `@client` components build in the browser after the page has loaded (after a click, for example), wrap the client root as well:
+
+```dart
+// lib/main.client.dart
+runApp(const Anatomy(child: ClientApp()));
+```
+
+A client-mode app, which renders nothing on the server, wraps its root the same way, `runApp(Anatomy(child: App()))`, and gets the overlay from the client alone: `?anatomy` or Alt+Shift+A turns it on. In the browser `enabled` defaults to `kDebugMode` too, so a release build of the client leaves it off unless you pass `enabled: true`. Debug builds of the client carry the overlay program (about 230 KB) for client-mode apps; release builds leave it out, so keeping `Anatomy` around the client root costs about 2.5 KB there. A client-mode app therefore gets the overlay in debug builds only.
 
 ## Use the overlay
 
@@ -133,9 +142,12 @@ A request asks for anatomy with the `jaspr_anatomy` cookie (set by the hotkey an
 
 Component names, libraries and source lines are read on the server, so a minified client build makes no difference.
 
+When the client root is wrapped too, the client program offers its live component tree to the overlay. The overlay asks for it whenever the page changes and puts each `@client` component's live subtree in place of what the server described, keeping the server's names, origins and source lines for classes the server rendered. Classes only the browser ever built get the name the compiler kept: the real one in development builds, `minified:Xy` in a minified build.
+
 ## Limits
 
-- **The page as the server rendered it.** What a client component draws later in the browser, after a click for example, is not in the tree. Client-mode Jaspr apps, which render nothing on the server, are not supported yet.
+- **Later browser changes need the client root wrapped.** Without `Anatomy` around the client root, the tree is the page as the server rendered it. With it, a `@client` component that takes server-rendered children keeps the server's description, because the client does not see inside those children.
+- **Client-mode apps have names only.** No server means no source lines or origins, so the Project filter shows every class that is not Jaspr's own.
 - **Source locations need a server run from source** (`jaspr serve`, `dart run`). They are read through `dart:mirrors`, which ahead-of-time compiled servers do not have; there you get names only.
 - **Raw HTML** (`RawText`, `raw()`) is a black box: the tool knows something is there, not what.
 - **A strict Content-Security-Policy** that forbids inline scripts blocks the overlay. `inspect` still works.

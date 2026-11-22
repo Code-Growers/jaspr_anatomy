@@ -14,6 +14,7 @@ import 'dom.dart';
 import 'dom_map.dart';
 import 'flat_view.dart';
 import 'layers_view.dart';
+import 'live.dart';
 import 'panel.dart';
 import 'state.dart';
 import 'styles.dart';
@@ -25,14 +26,23 @@ void main() {
   // fresh copy of the page. One overlay is enough.
   if (globalContext.has(_apiName)) return;
   final script = web.document.getElementById(anatomyDataId);
-  if (script == null) return;
+  // A client-mode app has no server snapshot; its client program describes it.
+  if (script == null && !LiveTree.available) return;
   Overlay(script).start();
 }
 
 class Overlay {
   Overlay(this._script);
 
-  web.Element _script;
+  /// The server's snapshot script, or null in a client-mode app.
+  web.Element? _script;
+
+  /// What the server rendered, aligned with the page.
+  AnatomySnapshot? _server;
+  DomMap? _serverDom;
+
+  /// The live tree last shown, to tell whether anything changed.
+  String? _liveJson;
   late final web.HTMLElement _host;
   late final OverlayState state;
   late final FlatView _flat;
@@ -43,13 +53,19 @@ class Overlay {
 
   String _viewKey = '';
   ViewMode? _shownMode;
-  String? get _root => _script.getAttribute('data-root');
+  String? get _root => _script?.getAttribute('data-root');
+
+  /// The script element that started the overlay in a client-mode app.
+  web.Element? get _ownScript => web.document.getElementById(anatomyOverlayId);
 
   void start() {
-    final snapshot = AnatomySnapshot.decode(_script.textContent ?? '{}');
-    // Read the page before the client script hydrates it: at this point the
-    // DOM is exactly what the server rendered.
-    final dom = DomMap.align(snapshot, _script);
+    if (_script case final script?) {
+      _server = AnatomySnapshot.decode(script.textContent ?? '{}');
+      // Read the page before the client script hydrates it: at this point the
+      // DOM is exactly what the server rendered.
+      _serverDom = DomMap.align(_server!, script);
+    }
+    final (snapshot, dom) = _describe();
     _keepOn();
 
     _host = el('div', attrs: {'id': '__jaspr_anatomy_host__'});
@@ -74,11 +90,12 @@ class Overlay {
       onFront: () => _layers.front(),
       onResetCamera: () => _layers.reset(),
       snapshotJson: _snapshotJson,
-      editorUrl: _script.getAttribute('data-editor') ?? 'vscode://file/{file}:{line}',
+      editorUrl: _script?.getAttribute('data-editor') ?? _ownScript?.getAttribute('data-editor') ?? defaultEditorUrl,
       projectRoot: _root,
     );
 
     state.listen(_render);
+    on(web.document, liveEvent, (_) => _refresh());
     _listen();
     _exposeApi();
     _render();
@@ -235,16 +252,42 @@ class Overlay {
     final current = web.document.getElementById(anatomyDataId);
     if (current != null && current != _script) {
       // A new copy of the page arrived, with its own description.
-      _script = current;
       try {
         final snapshot = AnatomySnapshot.decode(current.textContent ?? '{}');
-        state.replace(snapshot, DomMap.align(snapshot, current));
+        _script = current;
+        _server = snapshot;
+        _serverDom = DomMap.align(snapshot, current);
+        _liveJson = null;
+        final (described, dom) = _describe();
+        state.replace(described, dom);
       } on FormatException {
         // Keep showing the previous page's description.
       }
       return;
     }
-    _measure.schedule();
+    if (!_refresh()) _measure.schedule();
+  }
+
+  /// The page as the server rendered it, updated with the client program's
+  /// live tree when the page has one.
+  Described _describe() {
+    final live = LiveTree.read();
+    _liveJson = live?.json;
+    if (live == null) {
+      final empty = AnatomySnapshot(types: [], roots: []);
+      return (_server ?? empty, _serverDom ?? DomMap.known(empty, {}));
+    }
+    return combine(_server, _serverDom, live);
+  }
+
+  /// Reads the live tree again. Returns whether the description changed.
+  bool _refresh() {
+    final live = LiveTree.read();
+    if (live == null || live.json == _liveJson) return false;
+    _liveJson = live.json;
+    final (snapshot, dom) = combine(_server, _serverDom, live);
+    state.refresh(snapshot, dom);
+    return true;
   }
 
   /// The snapshot with the current position of every located node.

@@ -289,6 +289,21 @@ class OverlayState {
     notify();
   }
 
+  /// Replaces the page description after part of the page re-rendered,
+  /// keeping what is selected where it still exists.
+  void refresh(AnatomySnapshot nextSnapshot, DomMap nextDom) {
+    final selectedHost = selected?.hosts.firstOrNull;
+    final type = selectedType;
+    snapshot = nextSnapshot;
+    dom = nextDom;
+    rebuild();
+    if (selectedHost != null) {
+      selected = boxes.where((box) => box.hosts.contains(selectedHost)).firstOrNull;
+    }
+    if (type != null && snapshot.types.any((t) => t.id == type)) selectedType = type;
+    notify();
+  }
+
   // --- Settings kept between page loads --------------------------------------
 
   static const String _storageKey = 'jaspr_anatomy';

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- `Anatomy` also works in the browser. Around the client root it lets the overlay follow what `@client` components build after load, and it gives client-mode apps the overlay without a server.
+- The overlay keeps the selection when part of the page re-renders.
+- Release builds of the client leave the overlay program out.
+- Fixed: a malformed `Cookie` header made pages with `Anatomy` fail with status 500.
+- Fixed: Alt+Shift+A did nothing on a URL with `?anatomy=0`.
+
 ## 0.1.0-dev.1
 
 First version.
