@@ -9,6 +9,8 @@ It is a development tool. It adds nothing to release builds and nothing to a pag
 
 Inspired by [React Anatomy](https://react-anatomy.com/). Requires Jaspr 0.24 and Dart 3.13.
 
+![The overlay on the example site: outlines, the component tree, a component built after a click, reuse findings and the 3D layers](https://raw.githubusercontent.com/Code-Growers/jaspr_anatomy/main/doc/showcase.gif)
+
 ## Set up
 
 Add the package. It is not on pub.dev yet, so use a git or path dependency:

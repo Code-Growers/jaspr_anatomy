@@ -4,6 +4,10 @@ version: 0.1.0-dev.1
 repository: https://github.com/Code-Growers/jaspr_anatomy
 issue_tracker: https://github.com/Code-Growers/jaspr_anatomy/issues
 
+screenshots:
+  - description: The overlay on a page, with the component tree, reuse findings and the 3D layers view.
+    path: doc/showcase.gif
+
 topics:
   - jaspr
   - devtools
