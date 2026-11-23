@@ -13,12 +13,10 @@ Inspired by [React Anatomy](https://react-anatomy.com/). Requires Jaspr 0.24 and
 
 ## Set up
 
-Add the package. It is not on pub.dev yet, so use a git or path dependency:
+Add the package:
 
-```yaml
-dependencies:
-  jaspr_anatomy:
-    path: ../jaspr_anatomy
+```sh
+dart pub add jaspr_anatomy:^0.1.0-dev.1
 ```
 
 Wrap the page body in `Anatomy`:
